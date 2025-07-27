@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:test/cubit/test_cubit.dart';
 import 'package:test/pages/test_all_api.dart';
-
-import '../core/validators.dart';
+import 'package:test/widgets/common_widgets.dart';
+import 'package:test/core/validators.dart';
 
 class LoginPage extends StatelessWidget {
   const LoginPage({super.key});
@@ -15,16 +15,22 @@ class LoginPage extends StatelessWidget {
     final formKey = GlobalKey<FormState>();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Login Page')),
+      appBar: AppBar(
+        title: const Text('Login Page'),
+        backgroundColor: Colors.deepPurple,
+        foregroundColor: Colors.white,
+      ),
       body: Form(
         key: formKey,
         child: Padding(
-          padding: const EdgeInsets.all(8.0),
+          padding: const EdgeInsets.all(16.0),
           child: BlocConsumer<TestCubit, TestState>(
             listener: (context, state) {
               if (state is LoginSuccess) {
                 Navigator.of(context).pushReplacement(
-                  MaterialPageRoute(builder: (context) => TestAllApi()),
+                  MaterialPageRoute(
+                    builder: (context) => const TestAllApi(),
+                  ),
                 );
               } else if (state is LoginFailure) {
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -48,9 +54,7 @@ class LoginPage extends StatelessWidget {
                       FocusScope.of(context).unfocus();
                     },
                     keyboardType: TextInputType.text,
-                    validator: (value) {
-                      return Validators.validateLogin(value);
-                    },
+                    validator: Validators.validateLogin,
                     decoration: const InputDecoration(
                       labelText: 'Login',
                       border: OutlineInputBorder(
@@ -58,16 +62,14 @@ class LoginPage extends StatelessWidget {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 16),
                   TextFormField(
                     onTapOutside: (event) {
                       FocusScope.of(context).unfocus();
                     },
                     controller: passwordController,
                     keyboardType: TextInputType.visiblePassword,
-                    validator: (value) {
-                      return Validators.validatePassword(value);
-                    },
+                    validator: Validators.validatePassword,
                     decoration: InputDecoration(
                       suffixIcon: IconButton(
                         icon: Icon(
@@ -75,48 +77,29 @@ class LoginPage extends StatelessWidget {
                               ? Icons.visibility
                               : Icons.visibility_off,
                         ),
-                        onPressed: () {
-                          cubit.togglePasswordVisibility();
-                        },
+                        onPressed: cubit.togglePasswordVisibility,
                       ),
                       labelText: 'Password',
-                      border: OutlineInputBorder(
+                      border: const OutlineInputBorder(
                         borderRadius: BorderRadius.all(Radius.circular(10.0)),
                       ),
                     ),
-                    obscureText:
-                        state is PasswordVisibilityToggled
-                            ? !state.isVisible
-                            : !cubit.isPasswordVisible,
+                    obscureText: state is PasswordVisibilityToggled
+                        ? !state.isVisible
+                        : !cubit.isPasswordVisible,
                   ),
-                  const SizedBox(height: 20),
-                  ElevatedButton(
+                  const SizedBox(height: 24),
+                  AppButton(
+                    text: 'Login',
+                    isLoading: state is LoginLoading,
                     onPressed: () {
-                      if (formKey.currentState!.validate() &&
-                          state is! LoginLoading) {
+                      if (formKey.currentState!.validate()) {
                         cubit.login(
                           loginController.text,
                           passwordController.text,
                         );
                       }
                     },
-
-                    style: ElevatedButton.styleFrom(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10.0),
-                      ),
-                      minimumSize: const Size(
-                        double.infinity,
-                        50,
-                      ),
-                    ),
-
-                    child:
-                        state is LoginLoading
-                            ? const CircularProgressIndicator(
-                              color: Colors.white,
-                            )
-                            : const Text('login'),
                   ),
                 ],
               );
